@@ -1,10 +1,10 @@
-#$(info >>>>> $(CURDIR) | 1 <<<<<)
+# this (recursion-free) script builds one folder
 .SUFFIXES:	# clears the implicit built-in rules
 include $(RULESDIR)/tools.mk
 include $(RULESDIR)/platform.mk
 
 ### 1 | flags to be passed to compiler/linker
-# these are overrides of <platform>_rules, so you cannot rename variables
+# these are substituted into recipes.mk, so you cannot rename variables
 INCLUDE  := $(foreach dir, $(LIBLOCBUNDLE), -I $(dir)/include) \
 			$(foreach dir, $(INCLUDES), -iquote $(dir)) \
 			-I $(LIBOGC_INC) -I $(CACHE)/data
@@ -21,7 +21,7 @@ $(info LD   | $(LIBPATHS) $(LIBS))
 endif
 
 ### 2 | source file enumeration
-VPATH := $(SRCS) $(BINS) $(CACHE)
+VPATH := $(SRCS) $(BINS) $(CACHE) # built-in variable specifying locations for prerequisites
 # files are found by dir/*.*, then filtered by a list of extensions ("%" must be prepended to each extension)
 SRCFILES := $(foreach dir, $(SRCS), $(filter $(foreach ext, $(SRCEXTS), %$(ext)), $(wildcard $(dir)/*.*)))
 BINFILES := $(foreach dir, $(BINS), $(filter $(foreach ext, $(BINEXTS), %$(ext)), $(wildcard $(dir)/*.*)))
@@ -35,8 +35,11 @@ $(info bino | $(BINOFILES))
 endif
 
 ### 3 | recipes
-# syntax is "product: dependencies", newlines have extra steps)
-# first rule in this file is first checked, then dependencies recursed
+# syntax is "target: dependencies", meaning target *demands* dependencies
+# each rule constructs targets in series, from all dependencies simultaneously
+# once the demands are met (i.e. the files exist), the indented block below is run in a shell
+# dependencies are recursed starting from the target passed to make, or
+# the first in the file (after includes are resolved) if just "make" is called
 
 # output rules
 ifeq ($(TYPE), dol+elf)
@@ -51,14 +54,15 @@ ifeq ($(TYPE), a)
 $(BUILD)/lib$(TARGET).a	:   $(BINOFILES) $(SRCOFILES)
 endif
 
-$(SRCOFILES): $(BINOFILES)
-
-# compiler-generated dependency-test make targets (.d files)
+# extra dependency enforcement
+$(SRCOFILES): $(BINOFILES) # some SRCOFILES include some BINOFILES
 -include $(SRCOFILES:.o=.d) # "-" suppresses errors
+# ^ compiler-generated rules connecting objects to source + headers (including library ones)
 
+# commands to generate files
 include $(RULESDIR)/recipes.mk
 
+# delete generated files and any empty folders between them and the root
 clean:
-	@echo [clean] $(CURDIR)
 	@rm -rf $(BUILD) $(CACHE)
 	@find $(dir $(BUILD) $(CACHE)) -type d -empty -delete 2>/dev/null || true
