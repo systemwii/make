@@ -23,13 +23,13 @@ export PORTLIBS_PATH	:=	$(DEVKITPRO)/portlibs
 #---------------------------------------------------------------------------------
 PREFIX	:=	powerpc-eabi-
 
-export AS	:=	$(PREFIX)as
-export CC	:=	$(PREFIX)gcc
-export CXX	:=	$(PREFIX)g++
-export AR	:=	$(PREFIX)gcc-ar
+export AS		:=	$(PREFIX)as
+export CC		:=	$(PREFIX)gcc
+export CXX		:=	$(PREFIX)g++
+export AR		:=	$(PREFIX)gcc-ar
 export OBJCOPY	:=	$(PREFIX)objcopy
 export STRIP	:=	$(PREFIX)strip
-export NM	:=	$(PREFIX)gcc-nm
+export NM		:=	$(PREFIX)gcc-nm
 export RANLIB	:=	$(PREFIX)gcc-ranlib
 
 ISVC=$(or $(VCBUILDHELPER_COMMAND),$(MSBUILDEXTENSIONSPATH32),$(MSBUILDEXTENSIONSPATH))
@@ -42,8 +42,8 @@ endif
 # allow seeing compiler command lines with make V=1 (similar to autotools' silent)
 #---------------------------------------------------------------------------------
 ifeq ($(V),1)
-    SILENTMSG := @true
-    SILENTCMD :=
+    SILENTMSG := @echo && echo
+    SILENTCMD := 
 else
     SILENTMSG := @echo
     SILENTCMD := @

@@ -1,4 +1,4 @@
-_VERSION := systemwii-0
+_VERSION := s2.0
 
 $(if $(findstring /,$(DEVKITPRO)),,$(error DEVKITPRO not set; run: export DEVKITPRO=<path to>devkitPRO))
 
