@@ -46,9 +46,9 @@ All of these are space-separated lists.
 
 **LIBS** Libraries to link with. These are specified verbatim as flags to the linker (look up `ld` for the format), and the libraries must be available in the two following search path variables. libogc libraries are automatically included.
 
-**LIBLOCBUNDLE**: Search paths for bundled libraries: files matching `/include/*.h` and `/lib/*.a` in a folder specified here are included.
+**LIBDIRSBNDLE**: Search paths for bundled libraries: files matching `/include/*.h` and `/lib/*.a` in a folder specified here are included.
 
-**LIBLOCLOOSE**: Search paths for standalone `*.a` files.
+**LIBDIRSLOOSE**: Search paths for standalone `*.a` files.
 
 ### Flags
 
@@ -60,11 +60,7 @@ These are specified with `=` rather than `:=`, which means they are templates th
 * **LDFLAGS**: flags for the linker.
 * **ARFLAGS**: flags for the archiver (.a file generator).
 
-MACHDEP is defined in rules/platform
-
-INCLUDE must be passed here
-
-LIBPATHS and LIBS are auto-passed, so cannot be renamed
+INCLUDES, LIBS, LIBDIRSBNDLE and LIBDIRSLOOSE are automatically passed to the relevant tools. MACHDEP is defined in rules/platform.mk.
 
 ## Make Arguments
 

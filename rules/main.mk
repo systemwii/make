@@ -3,7 +3,7 @@ ifeq ($(E),1)						# this E flag ("exec") is set in leaf calls
 include $(RULESDIR)/output.mk		# E=1: it calls the output (build) script
 else								# E!=1: it recurses over subfolders
 
-SUBDIRS := $(dir $(wildcard */*/Makefile */Makefile))# 1 or 2 levels deeper
+SUBDIRS := $(dir $(wildcard */*/Makefile */Makefile)) # 1 or 2 levels deeper
 
 SUBDIRSBUILD := $(addsuffix ~build,$(SUBDIRS))		# virtual targets representing build of subdir
 build: $(SUBDIRSBUILD)								# "make build" demands each ~build target, then its own leaf

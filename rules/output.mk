@@ -5,11 +5,11 @@ include $(RULESDIR)/platform.mk
 
 ### 1 | flags to be passed to compiler/linker
 # these are substituted into recipes.mk, so you cannot rename variables
-INCLUDE  := $(foreach dir, $(LIBLOCBUNDLE), -I $(dir)/include) \
+INCLUDE  := $(foreach dir, $(LIBDIRSBNDLE), -I $(dir)/include) \
 			$(foreach dir, $(INCLUDES), -iquote $(dir)) \
 			-I $(LIBOGC_INC) -I $(CACHE)/data
-LIBPATHS := $(foreach dir, $(LIBLOCBUNDLE), -L $(dir)/lib) \
-			$(foreach dir, $(LIBLOCLOOSE), -L $(dir)) \
+LIBPATHS := $(foreach dir, $(LIBDIRSBNDLE), -L $(dir)/lib) \
+			$(foreach dir, $(LIBDIRSLOOSE), -L $(dir)) \
 			-L $(LIBOGC_LIB)
 
 LD 		 := $(if $(findstring cpp,$(SRCEXTS)),$(CXX),$(CC))
@@ -21,7 +21,7 @@ $(info LD   | $(LIBPATHS) $(LIBS))
 endif
 
 ### 2 | source file enumeration
-VPATH := $(SRCS) $(BINS) $(CACHE) # built-in variable specifying locations for prerequisites
+VPATH := $(SRCS) $(BINS) # built-in variable specifying locations for prerequisites
 # files are found by dir/*.*, then filtered by a list of extensions ("%" must be prepended to each extension)
 SRCFILES := $(foreach dir, $(SRCS), $(filter $(foreach ext, $(SRCEXTS), %$(ext)), $(wildcard $(dir)/*.*)))
 BINFILES := $(foreach dir, $(BINS), $(filter $(foreach ext, $(BINEXTS), %$(ext)), $(wildcard $(dir)/*.*)))
