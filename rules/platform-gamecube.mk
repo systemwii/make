@@ -2,17 +2,17 @@ ifeq ($(strip $(DEVKITPPC)),)
 $(error "Please set DEVKITPPC in your environment. export DEVKITPPC=<path to>devkitPro/devkitPPC)
 endif
 
-include $(DEVKITPPC)/base_rules
+include $(DEVKITPPC)/recipes.mk
 
-PORTLIBS	:=	$(PORTLIBS_PATH)/wii $(PORTLIBS_PATH)/ppc
+PORTLIBS	:=	$(PORTLIBS_PATH)/gamecube $(PORTLIBS_PATH)/ppc
 
-export PATH     :=      $(PORTLIBS_PATH)/wii/bin:$(PORTLIBS_PATH)/ppc/bin:$(PATH)
+export PATH	:=	$(PORTLIBS_PATH)/gamecube/bin:$(PORTLIBS_PATH)/ppc/bin:$(PATH)
 
 export	LIBOGC_INC	:=	$(DEVKITPRO)/libogc/include
-export	LIBOGC_LIB	:=	$(DEVKITPRO)/libogc/lib/wii
+export	LIBOGC_LIB	:=	$(DEVKITPRO)/libogc/lib/cube
 
-MACHDEP =  -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float
 
+MACHDEP =  -DGEKKO -mogc -mcpu=750 -meabi -mhard-float
 
 #---------------------------------------------------------------------------------
 %.dol: %.elf

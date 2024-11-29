@@ -1,4 +1,4 @@
-include $(DEVKITPPC)/base_tools
+include $(DEVKITPPC)/tools.mk
 
 #---------------------------------------------------------------------------------
 %.a:

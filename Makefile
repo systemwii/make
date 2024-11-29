@@ -1,14 +1,13 @@
-_MAJOR	:= 1
-_MINOR	:= 2
-_PATCH	:= 1
+_VERSION := systemwii-0
 
-FILES	:=	base_rules base_tools gamecube_rules wii_rules
+$(if $(findstring /,$(DEVKITPRO)),,$(error DEVKITPRO not set; run: export DEVKITPRO=<path to>devkitPRO))
 
 all:
 	@echo "use dist or install targets"
 
 install:
-	@cp -v $(FILES) $(DESTDIR)$(DEVKITPRO)/devkitPPC
+	@sudo rm -rfv $(DEVKITPRO)/devkitPPC/rules
+	@sudo cp -rv rules $(DESTDIR)$(DEVKITPRO)/devkitPPC/rules
 
 dist:
-	@tar -cJf devkitppc-rules-$(_MAJOR).$(_MINOR).$(_PATCH).tar.xz $(FILES) Makefile
+	@tar -cJf devkitppc-rules-$(_VERSION).tar.xz rules Makefile
