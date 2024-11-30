@@ -4,15 +4,39 @@ Welcome to systemwii's Make rules setup. Consult <https://makefiletutorial.com/>
 
 ## Make Configuration
 
-You can set the variable **RULESDIR** to point to the rules folder of this repository. Clone this repository, and either:
-1. add it as a submodule to your repository and set RULESDIR to point to it directly, or
-2. install it with `make install`, which replaces the entire contents of `$(DEVKITPPC)/rules` with this rules folder, and then set RULESDIR TO `$(DEVKITPPC)/rules`. Original DevkitPPC rules won't be affected by installing these, since they live scattered around `$(DEVKITPPC)/`.
+You can set the variable **RULESDIR** to point to the rules folder of this repository. Clone this repository, and either include them by submodule or install them as below.
 
 Installing the rules lets you have an unchanging version at a global path, while including them by submodule allows you to make instant changes to them as you work.
 
-With this set up, you can make a copy of a Makefile from any systemwii project and use it with the instructions below.
+### 1. Submodule
+
+From your repository, run this to add it as a submodule:
+```bash
+git submodule add https://github.com/systemwii/make.git lib/make
+```
+Then set RULESDIR in your Makefile to point to it directly:
+```makefile
+RULESDIR	:=	lib/make/rules
+```
+To update it, run:
+```bash
+cd lib/make && git pull && cd ../..
+```
+
+### 2. Install
+From this cloned repository, run this to install it:
+```bash
+make install
+```
+This replaces the entire contents of `$(DEVKITPPC)/rules` with the rules folder here. Then set RULESDIR to point to the installation:
+```
+RULESDIR	:=	$(DEVKITPPC)/rules
+```
+Original DevkitPPC rules won't be affected by installing these, since they live scattered around `$(DEVKITPPC)/`.
 
 ## Available Variables
+
+With this set up, you can make a copy of a Makefile from any systemwii project and use it with these instructions.
 
 > [!WARNING]  
 > You can't put a comment on the same line as setting a variable else Make will include all the spaces before the # in the variable (lol).
@@ -85,5 +109,8 @@ The default behaviour is to recurse into any nested subfolders that have Makefil
 ```bash
 make build E=1 V=1
 ```
+
+There's an additional post-build option, to run after the build:
+- `make run`: if the build produces a .dol executable, this sends it to the Homebrew Channel over your local network and runs it (with AHB access forced on). To configure your Wii's IP address, use `export WIILOAD=tcp:192.168.1.xx`, substituting your Wii's local IP address, which you can set up via a DHCP reservation in your router's settings.
 
 You're encouraged to read thru the Make rules setup and edit or override anything you wish to. Add extra post-build targets, such as `dist` to package your output, after any include lines in your main Makefile, so that they don't take precedence over the default `make` target (`make build`).
