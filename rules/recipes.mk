@@ -29,15 +29,15 @@ $(BUILD)/%.tpl: | $(BUILD)
 # -L: specifies folders to search for libraries (*.a)
 # -l: specifies libraries by name to find in -L folders and link to the project
 # -o: output file
-
+define link_rule
+	$(SILENTMSG) [o → elf] [\*.o] → $@
+	$(ADD_COMPILE_COMMAND) end
+	$(SILENTCMD)$(LD) $^ $(LDFLAGS) $(LIBPATHS) $(LIBS) -o $@
+endef
 $(BUILD)/%.elf: | $(BUILD)
-	$(SILENTMSG) [o → elf] → $@
-	$(ADD_COMPILE_COMMAND) end
-	$(SILENTCMD)$(LD) $^ $(LDFLAGS) $(LIBPATHS) $(LIBS) -o $@
+	$(link_rule)
 $(CACHE)/%.elf: | $(CACHE)
-	$(SILENTMSG) [o → elf] → $@
-	$(ADD_COMPILE_COMMAND) end
-	$(SILENTCMD)$(LD) $^ $(LDFLAGS) $(LIBPATHS) $(LIBS) -o $@
+	$(link_rule)
 
 
 # --- archiver ---
@@ -45,12 +45,23 @@ $(CACHE)/%.elf: | $(CACHE)
 # r - adds members by replacement (rather than appending)
 # s - writes an index (declaring its members to the linker)
 
-$(BUILD)/%.a: | $(BUILD)
-	$(SILENTMSG) [o → a] → $@
+define archive_rule
+	$(SILENTMSG) [o → a] [\*.o] → $@
 	$(ADD_COMPILE_COMMAND) end
 	$(SILENTCMD)rm -f $@
 	$(SILENTCMD)$(AR) $(ARFLAGS) $@ $^
 	@echo
+endef
+$(BUILD)/lib/%.a: | $(BUILD)			# bundled libs
+	@mkdir $(BUILD)/lib
+	$(archive_rule)
+$(BUILD)/%.a: | $(BUILD)				# loose libs
+	$(archive_rule)
+
+$(BUILD)/include/%.h: %.h | $(BUILD)	# bundled libs
+	@mkdir $(BUILD)/include
+	$(SILENTMSG) [h → h] $< → $@
+	@cp $< $@
 
 
 # --- compiler ---

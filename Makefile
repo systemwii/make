@@ -2,8 +2,9 @@ _VERSION := s2.0
 
 $(if $(findstring /,$(DEVKITPRO)),,$(error DEVKITPRO not set; run: export DEVKITPRO=<path to>devkitPRO))
 
-all:
-	@echo "use dist or install targets"
+# skip if invoked externally/recursively by make / make build / make clean
+build clean:
+	@exit
 
 install:
 	@sudo rm -rfv $(DEVKITPRO)/devkitPPC/rules

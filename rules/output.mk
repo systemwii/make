@@ -21,7 +21,7 @@ $(info LD   | $(LIBPATHS) $(LIBS))
 endif
 
 ### 2 | source file enumeration
-VPATH := $(SRCS) $(BINS) # built-in variable specifying locations for prerequisites
+VPATH := $(SRCS) $(BINS) # built-in variable specifying search locations for prerequisites
 # files are found by dir/*.*, then filtered by a list of extensions ("%" must be prepended to each extension)
 SRCFILES := $(foreach dir, $(SRCS), $(filter $(foreach ext, $(SRCEXTS), %$(ext)), $(wildcard $(dir)/*.*)))
 BINFILES := $(foreach dir, $(BINS), $(filter $(foreach ext, $(BINEXTS), %$(ext)), $(wildcard $(dir)/*.*)))
@@ -42,16 +42,20 @@ endif
 # the first in the file (after includes are resolved) if just "make" is called
 
 # output rules
+# for .elf and .a, the dependencies before | are precisely what's passed as input to the tool
 ifeq ($(TYPE), dol+elf)
-$(BUILD)/$(TARGET).dol  :   $(BUILD)/$(TARGET).elf
-$(BUILD)/$(TARGET).elf  :   $(BINOFILES) $(SRCOFILES)
+$(BUILD)/$(TARGET).dol		:	$(BUILD)/$(TARGET).elf
+$(BUILD)/$(TARGET).elf		:	$(BINOFILES) $(SRCOFILES)	
 endif
 ifeq ($(TYPE), dol)
-$(BUILD)/$(TARGET).dol  :   $(CACHE)/$(TARGET).elf
-$(CACHE)/$(TARGET).elf  :   $(BINOFILES) $(SRCOFILES)
+$(BUILD)/$(TARGET).dol		:   $(CACHE)/$(TARGET).elf
+$(CACHE)/$(TARGET).elf		:	$(BINOFILES) $(SRCOFILES)
 endif
 ifeq ($(TYPE), a)
-$(BUILD)/lib$(TARGET).a	:   $(BINOFILES) $(SRCOFILES)
+$(BUILD)/lib$(TARGET).a		:	$(BINOFILES) $(SRCOFILES)
+endif
+ifeq ($(TYPE), a+h)
+$(BUILD)/lib/lib$(TARGET).a	:   $(BINOFILES) $(SRCOFILES) | $(BUILD)/include/$(TARGET).h
 endif
 
 # extra dependency enforcement
@@ -65,4 +69,4 @@ include $(RULESDIR)/recipes.mk
 # delete generated files and any empty folders between them and the root
 clean:
 	@rm -rf $(BUILD) $(CACHE)
-	@find $(dir $(BUILD) $(CACHE)) -type d -empty -delete 2>/dev/null || true
+	@rmdir -p $(dir $(BUILD) $(CACHE)) 2>/dev/null || true
