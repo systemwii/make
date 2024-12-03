@@ -21,9 +21,11 @@ $(BUILD)/%.tpl: | $(BUILD)
 # --- linker ---
 # using ld from the toolchain doesn't work for some reason, so we call gcc/g++
 # [inputs]: object (.o) files to link
+# -r: relocatable linking (output can be fed back into linker for incremental build)
 # -g: enables debugging in gcc (not used by ld)
 # -Wl: passes thru arguments to ld:
 #      -Map: outputs a link map to a file
+#      --no-gc-sections: disables garbage collection of symbols (needed by -r)
 # -D: defines macro by name (with value 1)
 # -m: machine-dependent options
 # -L: specifies folders to search for libraries (*.a)
@@ -44,12 +46,14 @@ $(CACHE)/%.elf: | $(CACHE)
 # c - creates archive
 # r - adds members by replacement (rather than appending)
 # s - writes an index (declaring its members to the linker)
+# we call the linker to link in sublibraries, then archive the result
 
 define archive_rule
 	$(SILENTMSG) [o → a] [\*.o] → $@
 	$(ADD_COMPILE_COMMAND) end
 	$(SILENTCMD)rm -f $@
-	$(SILENTCMD)$(AR) $(ARFLAGS) $@ $(BINOFILES) $(SRCOFILES)
+	$(SILENTCMD)$(LD) -r -Wl,--no-gc-sections $(BINOFILES) $(SRCOFILES) $(LDFLAGS) $(LIBPATHS) $(LIBS) -o $(subst .a,.o,$@)
+	$(SILENTCMD)$(AR) $(ARFLAGS) $@ $(subst .a,.o,$@)
 	@echo
 endef
 $(BUILD)/lib/%.a:						# bundled libs
