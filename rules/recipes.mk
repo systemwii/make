@@ -32,7 +32,7 @@ $(BUILD)/%.tpl: | $(BUILD)
 define link_rule
 	$(SILENTMSG) [o → elf] [\*.o] → $@
 	$(ADD_COMPILE_COMMAND) end
-	$(SILENTCMD)$(LD) $^ $(LDFLAGS) $(LIBPATHS) $(LIBS) -o $@
+	$(SILENTCMD)$(LD) $(BINOFILES) $(SRCOFILES) $(LDFLAGS) $(LIBPATHS) $(LIBS) -o $@
 endef
 $(BUILD)/%.elf: | $(BUILD)
 	$(link_rule)
@@ -49,17 +49,17 @@ define archive_rule
 	$(SILENTMSG) [o → a] [\*.o] → $@
 	$(ADD_COMPILE_COMMAND) end
 	$(SILENTCMD)rm -f $@
-	$(SILENTCMD)$(AR) $(ARFLAGS) $@ $^
+	$(SILENTCMD)$(AR) $(ARFLAGS) $@ $(BINOFILES) $(SRCOFILES)
 	@echo
 endef
-$(BUILD)/lib/%.a: | $(BUILD)			# bundled libs
-	@mkdir $(BUILD)/lib
+$(BUILD)/lib/%.a:						# bundled libs
+	@mkdir -p $(BUILD)/lib
 	$(archive_rule)
 $(BUILD)/%.a: | $(BUILD)				# loose libs
 	$(archive_rule)
 
-$(BUILD)/include/%.h: %.h | $(BUILD)	# bundled libs
-	@mkdir $(BUILD)/include
+$(BUILD)/include/%.h: %.h				# bundled libs
+	@mkdir -p $(BUILD)/include
 	$(SILENTMSG) [h → h] $< → $@
 	@cp $< $@
 
