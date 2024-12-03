@@ -36,7 +36,7 @@ Original DevkitPPC rules won't be affected by installing these, since they live 
 
 ## Available Variables
 
-With this set up, you can rename a copy of the `template` file here to `Makefile` in the root of your project, and use it with these instructions.
+With this set up, you can clone a copy of the [template repository](https://github.com/systemwii/template) and use its Makefile with these instructions.
 
 > [!WARNING]  
 > You can't put a comment on the same line as setting a variable else Make will include all the spaces before the # in the variable (lol).
@@ -78,6 +78,9 @@ All of these are space-separated lists.
 - *(Wii/GameCube)*: -logc -lmad -ldb -lfat -ltinysmb -lgxflux -lmodplay -liso9660 -lasnd -laesnd
 - *(Wii)*: -lwiiuse -lbte -lwiikeyboard -ldi
 - *(GameCube)*: -lbba
+
+> [!IMPORTANT]
+> If a library you list here requires another you list here, you must list the requirer **before** the requiree.
 
 > [!IMPORTANT]  
 > **For libraries:** libraries are incrementally linked, so you must ensure that along every path in your tree of Makefiles, every library is only linked to **once**, else you will get multiple-definition errors. You will certainly want to only link libogc libraries at the top-level (for the final product), and typically link every library at the point it's used as a dependency. I've never had to deal with diamond dependencies but I expect you'd have to set LIBS at the top of the diamond, and LIBDIRS* thruout the paths, or something?
