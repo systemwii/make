@@ -54,6 +54,7 @@ define archive_rule
 	$(SILENTCMD)rm -f $@
 	$(SILENTCMD)$(LD) -r $(BINOFILES) $(SRCOFILES) $(LDFLAGS) $(LIBPATHS) $(LIBS) -o $(subst .a,.o,$@)
 	$(SILENTCMD)$(AR) $(ARFLAGS) $@ $(subst .a,.o,$@)
+	$(SILENTCMD)rm -f $(subst .a,.o,$@)
 	@echo
 endef
 $(BUILD)/lib/%.a:						# bundled libs

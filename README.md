@@ -36,7 +36,7 @@ Original DevkitPPC rules won't be affected by installing these, since they live 
 
 ## Available Variables
 
-With this set up, you can make a copy of a Makefile from any systemwii project and use it with these instructions.
+With this set up, you can rename a copy of the `template` file here to `Makefile` in the root of your project, and use it with these instructions.
 
 > [!WARNING]  
 > You can't put a comment on the same line as setting a variable else Make will include all the spaces before the # in the variable (lol).
@@ -52,6 +52,7 @@ All directories are relative to the Makefile being executed. Variables specified
 - `dol+elf`: As above but with both the .dol and .elf in the build folder.
 - `a`: An archive for a static library (named `lib<TARGET>.a`), for linking in outside applications (e.g. with the LIBDIRSLOOSE variable here).
 - `a+h`: An archive for a static library, bundled with its header (to `lib/lib<TARGET>.a` and `include/<TARGET>.h`), for linking in outside applications (e.g. with the LIBDIRSBNDLE variable here).
+- If left blank, Make will compile the project into object files but not link them into an output.
 
 **PLATFORM**: The target platform settings to apply (options: `wii`, `gamecube`).
 
@@ -78,6 +79,9 @@ All of these are space-separated lists.
 - *(Wii)*: -lwiiuse -lbte -lwiikeyboard -ldi
 - *(GameCube)*: -lbba
 
+> [!IMPORTANT]  
+> **For libraries:** libraries are incrementally linked, so you must ensure that along every path in your tree of Makefiles, every library is only linked to **once**, else you will get multiple-definition errors. You will certainly want to only link libogc libraries at the top-level (for the final product), and typically link every library at the point it's used as a dependency. I've never had to deal with diamond dependencies but I expect you'd have to set LIBS at the top of the diamond, and LIBDIRS* thruout the paths, or something?
+
 **LIBDIRSBNDLE**: Search paths for bundled libraries: files matching `/include/*.h` and `/lib/*.a` in a folder specified here are included.
 
 **LIBDIRSLOOSE**: Search paths for standalone `*.a` files (search is not recursive).
@@ -92,7 +96,10 @@ All of these are space-separated lists.
 * **LDFLAGS**: flags for the linker.
 * **ARFLAGS**: flags for the archiver (.a file generator).
 
-INCLUDES, LIBS, LIBDIRSBNDLE and LIBDIRSLOOSE are automatically passed to the relevant tools. MACHDEP is defined in rules/platform.mk. See rules/recipes.mk for an outline of what the flags mean.
+INCLUDES, LIBS, LIBDIRSBNDLE and LIBDIRSLOOSE are automatically passed to the relevant tools. See rules/recipes.mk for an outline of what the flags mean.
+
+> [!WARNING]  
+> MACHDEP (defined in rules/platform.mk) used to be specified here, but is now auto-passed in rules/recipes.mk for all compiles and application links, and you are strongly advised to not reinclude it. Because if you set `$(MACHDEP)` in LDFLAGS for a library link, this will cause MACHDEP-related symbols to be silently included several times in any final application using it 👻, which can cause a black-screen crash on start with no feedback 💀. So don't!
 
 ## Make Arguments
 
