@@ -34,7 +34,7 @@ $(BUILD)/%.tpl: | $(BUILD)
 define link_rule
 	$(SILENTMSG) [o → elf] [\*.o] → $@
 	$(ADD_COMPILE_COMMAND) end
-	$(SILENTCMD)$(LD) $(BINOFILES) $(SRCOFILES) $(LDFLAGS) $(LIBPATHS) $(LIBS) -o $@
+	$(SILENTCMD)$(LD) $(BINOFILES) $(SRCOFILES) $(LDFLAGS) $(MACHDEP) $(LIBPATHS) $(LIBS) -o $@
 endef
 $(BUILD)/%.elf: | $(BUILD)
 	$(link_rule)
@@ -52,7 +52,7 @@ define archive_rule
 	$(SILENTMSG) [o → a] [\*.o] → $@
 	$(ADD_COMPILE_COMMAND) end
 	$(SILENTCMD)rm -f $@
-	$(SILENTCMD)$(LD) -r -Wl,--no-gc-sections $(BINOFILES) $(SRCOFILES) $(LDFLAGS) $(LIBPATHS) $(LIBS) -o $(subst .a,.o,$@)
+	$(SILENTCMD)$(LD) -r $(BINOFILES) $(SRCOFILES) $(LDFLAGS) $(LIBPATHS) $(LIBS) -o $(subst .a,.o,$@)
 	$(SILENTCMD)$(AR) $(ARFLAGS) $@ $(subst .a,.o,$@)
 	@echo
 endef
@@ -85,14 +85,14 @@ $(BUILD)/include/%.h: %.h				# bundled libs
 # c++
 $(CACHE)/%.o: %.cpp | $(CACHE)
 	$(SILENTMSG) [cpp → o] $< → $@
-	$(ADD_COMPILE_COMMAND) add $(CC) "$(CPPFLAGS) $(CXXFLAGS) $(INCLUDE) -c $< -o $@" $<
-	$(SILENTCMD)$(CXX) -c -MMD -MP -MF $(DEPSDIR)/$*.d $(CPPFLAGS) $(CXXFLAGS) $(INCLUDE) $< -o $@ $(ERROR_FILTER)
+	$(ADD_COMPILE_COMMAND) add $(CC) "$(CPPFLAGS) $(CXXFLAGS) $(MACHDEP) $(INCLUDE) -c $< -o $@" $<
+	$(SILENTCMD)$(CXX) -c -MMD -MP -MF $(DEPSDIR)/$*.d $(CPPFLAGS) $(CXXFLAGS) $(MACHDEP) $(INCLUDE) $< -o $@ $(ERROR_FILTER)
 
 # c
 $(CACHE)/%.o: %.c | $(CACHE)
 	$(SILENTMSG) [c → o] $< → $@
-	$(ADD_COMPILE_COMMAND) add $(CC) "-c $(CPPFLAGS) $(CFLAGS) $(INCLUDE) $< -o $@" $<
-	$(SILENTCMD)$(CC) -c -MMD -MP -MF $(DEPSDIR)/$*.d $(CPPFLAGS) $(CFLAGS) $(INCLUDE) $< -o $@ $(ERROR_FILTER)
+	$(ADD_COMPILE_COMMAND) add $(CC) "-c $(CPPFLAGS) $(CFLAGS) $(MACHDEP) $(INCLUDE) $< -o $@" $<
+	$(SILENTCMD)$(CC) -c -MMD -MP -MF $(DEPSDIR)/$*.d $(CPPFLAGS) $(CFLAGS) $(MACHDEP) $(INCLUDE) $< -o $@ $(ERROR_FILTER)
 
 # objective-c :eyes:
 $(CACHE)/%.o: %.m | $(CACHE)
