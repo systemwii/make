@@ -2,10 +2,11 @@ _VERSION := s2.0
 
 $(if $(findstring /,$(DEVKITPRO)),,$(error DEVKITPRO not set; run: export DEVKITPRO=<path to>devkitPRO))
 
-# skip if invoked externally/recursively by make / make build / make clean
+# skip if inadvertently invoked externally/recursively by make / make build / make clean
 build clean:
 	@exit
 
+# to use install or dist, rename this file to "Makefile" (no underscore)
 install:
 	@sudo rm -rfv $(DEVKITPRO)/devkitPPC/rules
 	@sudo cp -rv rules $(DESTDIR)$(DEVKITPRO)/devkitPPC/rules

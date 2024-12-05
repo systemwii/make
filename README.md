@@ -24,11 +24,14 @@ cd lib/make && git pull && cd ../..
 ```
 
 ### 2. Install
-From this cloned repository, run this to install it:
+From this cloned repository, rename `Makefile_` to `Makefile`, then run install:
 ```bash
+mv Makefile_ Makefile
 make install
 ```
-This replaces the entire contents of `$(DEVKITPPC)/rules` with the rules folder here. Then set RULESDIR to point to the installation:
+This replaces the entire contents of `$(DEVKITPPC)/rules` with the rules folder here. The Makefile is called `Makefile_` by default to avoid it being detected and run as part of the submodule setup above (which slows down builds but is otherwise harmless).
+
+Next, set RULESDIR to point to the installation:
 ```
 RULESDIR	:=	$(DEVKITPPC)/rules
 ```
