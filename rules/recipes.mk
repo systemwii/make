@@ -25,7 +25,6 @@ $(BUILD)/%.tpl: | $(BUILD)
 # -g: enables debugging in gcc (not used by ld)
 # -Wl: passes thru arguments to ld:
 #      -Map: outputs a link map to a file
-#      --no-gc-sections: disables garbage collection of symbols (needed by -r)
 # -D: defines macro by name (with value 1)
 # -m: machine-dependent options
 # -L: specifies folders to search for libraries (*.a)

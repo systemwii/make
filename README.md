@@ -83,7 +83,9 @@ All of these are space-separated lists.
 > If a library you list here requires another you list here, you must list the requirer **before** the requiree.
 
 > [!IMPORTANT]  
-> **For libraries:** libraries are incrementally linked, so you must ensure that along every path in your tree of Makefiles, every library is only linked to **once**, else you will get multiple-definition errors. You will certainly want to only link libogc libraries at the top-level (for the final product), and typically link every library at the point it's used as a dependency. I've never had to deal with diamond dependencies but I expect you'd have to set LIBS at the top of the diamond, and LIBDIRS* thruout the paths, or something?
+> **For libraries:** libraries are incrementally linked, so you must ensure that along every path in your tree of Makefiles, every library is only linked to **once**, else you will get multiple-definition errors. You will certainly want to only link libogc libraries at the top-level (for the final product), and typically link every library at the point it's used as a dependency.
+> 
+> I've never had to deal with diamond dependencies (other than libogc) but I expect you'd have to handle it similarly to libogc, so by setting top-level LIBS, but also linking to one of the bottom-level dependents in LIBDIRS* (making sure they're all checked out to the same commit).
 
 **LIBDIRSBNDLE**: Search paths for bundled libraries: files matching `/include/*.h` and `/lib/*.a` in a folder specified here are included.
 
