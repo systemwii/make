@@ -91,7 +91,7 @@ All of these are space-separated lists.
 
 **LIBDIRSLOOSE**: Search paths for standalone `*.a` files (search is not recursive).
 
-**INCLUDES**: Search paths for `*.h` header files (search is not recursive). libogc headers and \<CACHE\>/data are automatically included (see above for the definition of CACHE).
+**INCLUDES**: Search paths for `*.h` header files (search is not recursive). \<SRCS\>, libogc headers and \<CACHE\>/data are automatically included (see above for the definitions of SRCS and CACHE).
 
 ### Flags
 
