@@ -21,6 +21,7 @@ $(BUILD)/%.tpl: | $(BUILD)
 # --- linker ---
 # using ld from the toolchain doesn't work for some reason, so we call gcc/g++
 # [inputs]: object (.o) files to link
+# -r: relocatable linking (output can be fed back into linker for incremental build)
 # -g: enables debugging in gcc (not used by ld)
 # -Wl: passes thru arguments to ld:
 #      -Map: outputs a link map to a file
@@ -32,7 +33,7 @@ $(BUILD)/%.tpl: | $(BUILD)
 define link_rule
 	$(SILENTMSG) [o → elf] [\*.o] → $@
 	$(ADD_COMPILE_COMMAND) end
-	$(SILENTCMD)$(LD) $(BINOFILES) $(SRCOFILES) $(LDFLAGS) $(LIBPATHS) $(LIBS) -o $@
+	$(SILENTCMD)$(LD) $(BINOFILES) $(SRCOFILES) $(LDFLAGS) $(MACHDEP) $(LIBPATHS) $(LIBS) -o $@
 endef
 $(BUILD)/%.elf: | $(BUILD)
 	$(link_rule)
@@ -44,12 +45,15 @@ $(CACHE)/%.elf: | $(CACHE)
 # c - creates archive
 # r - adds members by replacement (rather than appending)
 # s - writes an index (declaring its members to the linker)
+# we call the linker to link in sublibraries, then archive the result
 
 define archive_rule
 	$(SILENTMSG) [o → a] [\*.o] → $@
 	$(ADD_COMPILE_COMMAND) end
 	$(SILENTCMD)rm -f $@
-	$(SILENTCMD)$(AR) $(ARFLAGS) $@ $(BINOFILES) $(SRCOFILES)
+	$(SILENTCMD)$(LD) -r $(BINOFILES) $(SRCOFILES) $(LDFLAGS) $(LIBPATHS) $(LIBS) -o $(subst .a,.o,$@)
+	$(SILENTCMD)$(AR) $(ARFLAGS) $@ $(subst .a,.o,$@)
+	$(SILENTCMD)rm -f $(subst .a,.o,$@)
 	@echo
 endef
 $(BUILD)/lib/%.a:						# bundled libs
@@ -81,14 +85,14 @@ $(BUILD)/include/%.h: %.h				# bundled libs
 # c++
 $(CACHE)/%.o: %.cpp | $(CACHE)
 	$(SILENTMSG) [cpp → o] $< → $@
-	$(ADD_COMPILE_COMMAND) add $(CC) "$(CPPFLAGS) $(CXXFLAGS) $(INCLUDE) -c $< -o $@" $<
-	$(SILENTCMD)$(CXX) -c -MMD -MP -MF $(DEPSDIR)/$*.d $(CPPFLAGS) $(CXXFLAGS) $(INCLUDE) $< -o $@ $(ERROR_FILTER)
+	$(ADD_COMPILE_COMMAND) add $(CC) "$(CPPFLAGS) $(CXXFLAGS) $(MACHDEP) $(INCLUDE) -c $< -o $@" $<
+	$(SILENTCMD)$(CXX) -c -MMD -MP -MF $(DEPSDIR)/$*.d $(CPPFLAGS) $(CXXFLAGS) $(MACHDEP) $(INCLUDE) $< -o $@ $(ERROR_FILTER)
 
 # c
 $(CACHE)/%.o: %.c | $(CACHE)
 	$(SILENTMSG) [c → o] $< → $@
-	$(ADD_COMPILE_COMMAND) add $(CC) "-c $(CPPFLAGS) $(CFLAGS) $(INCLUDE) $< -o $@" $<
-	$(SILENTCMD)$(CC) -c -MMD -MP -MF $(DEPSDIR)/$*.d $(CPPFLAGS) $(CFLAGS) $(INCLUDE) $< -o $@ $(ERROR_FILTER)
+	$(ADD_COMPILE_COMMAND) add $(CC) "-c $(CPPFLAGS) $(CFLAGS) $(MACHDEP) $(INCLUDE) $< -o $@" $<
+	$(SILENTCMD)$(CC) -c -MMD -MP -MF $(DEPSDIR)/$*.d $(CPPFLAGS) $(CFLAGS) $(MACHDEP) $(INCLUDE) $< -o $@ $(ERROR_FILTER)
 
 # objective-c :eyes:
 $(CACHE)/%.o: %.m | $(CACHE)

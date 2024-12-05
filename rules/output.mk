@@ -41,7 +41,7 @@ endif
 # dependencies are recursed starting from the target passed to make, or
 # the first in the file (after includes are resolved) if just "make" is called
 
-ARCHDEPS := $(BINOFILES) $(SRCOFILES)
+# production of .elf / .a (using linker) depends on objects and included libraries
 LINKDEPS := $(BINOFILES) $(SRCOFILES) \
 			$(foreach dir, $(LIBDIRSBNDLE), $(wildcard $(dir)/lib/*.a)) \
 			$(foreach dir, $(LIBDIRSLOOSE), $(wildcard $(dir)/*.a))
@@ -56,10 +56,10 @@ $(BUILD)/$(TARGET).dol		:   $(CACHE)/$(TARGET).elf
 $(CACHE)/$(TARGET).elf		:	$(LINKDEPS)
 endif
 ifeq ($(TYPE), a)
-$(BUILD)/lib$(TARGET).a		:	$(ARCHDEPS)
+$(BUILD)/lib$(TARGET).a		:	$(LINKDEPS)
 endif
 ifeq ($(TYPE), a+h)
-$(BUILD)/lib/lib$(TARGET).a	:   $(ARCHDEPS) $(BUILD)/include/$(TARGET).h
+$(BUILD)/lib/lib$(TARGET).a	:   $(LINKDEPS) $(BUILD)/include/$(TARGET).h
 endif
 
 # extra dependency enforcement
