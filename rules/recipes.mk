@@ -24,6 +24,7 @@ $(BUILD)/%.tpl: | $(BUILD)
 # -r: relocatable linking (output can be fed back into linker for incremental build)
 # -g: enables debugging in gcc (not used by ld)
 # -Wl: passes thru arguments to ld:
+#      --exclude-libs: marks all symbols in specified input libraries (or "ALL") as hidden (see bottom of this page)
 #      -Map: outputs a link map to a file
 # -D: defines macro by name (with value 1)
 # -m: machine-dependent options
@@ -33,7 +34,7 @@ $(BUILD)/%.tpl: | $(BUILD)
 define link_rule
 	$(SILENTMSG) [o → elf] [\*.o] → $@
 	$(ADD_COMPILE_COMMAND) end
-	$(SILENTCMD)$(LD) $(BINOFILES) $(SRCOFILES) $(LDFLAGS) $(MACHDEP) $(LIBPATHS) $(LIBS) -o $@
+	$(SILENTCMD)$(LD) $(BINOFILES) $(SRCOFILES) $(LDFLAGS) -Wl,--exclude-libs,ALL $(MACHDEP) $(LIBPATHS) $(LIBS) -o $@
 endef
 $(BUILD)/%.elf: | $(BUILD)
 	$(link_rule)
@@ -46,12 +47,14 @@ $(CACHE)/%.elf: | $(CACHE)
 # r - adds members by replacement (rather than appending)
 # s - writes an index (declaring its members to the linker)
 # we call the linker to link in sublibraries, then archive the result
+# objcopy --localize-hidden converts hidden symbols to local (see bottom of this page)
 
 define archive_rule
 	$(SILENTMSG) [o → a] [\*.o] → $@
 	$(ADD_COMPILE_COMMAND) end
 	$(SILENTCMD)rm -f $@
-	$(SILENTCMD)$(LD) -r $(BINOFILES) $(SRCOFILES) $(LDFLAGS) $(LIBPATHS) $(LIBS) -o $(subst .a,.o,$@)
+	$(SILENTCMD)$(LD) -r $(BINOFILES) $(SRCOFILES) $(LDFLAGS) -Wl,--exclude-libs,ALL $(LIBPATHS) $(LIBS) -o $(subst .a,.o,$@)
+	$(SILENTCMD)$(OBJCOPY) --localize-hidden $(subst .a,.o,$@) $(subst .a,.o,$@)
 	$(SILENTCMD)$(AR) $(ARFLAGS) $@ $(subst .a,.o,$@)
 	$(SILENTCMD)rm -f $(subst .a,.o,$@)
 	@echo
@@ -72,6 +75,7 @@ $(BUILD)/include/%.h: %.h				# bundled libs
 # [inputs] source files to compile (extension matching template)
 # -c compile/assemble to objects (*.o), without linking them
 # -M*: set of flags instructing the preprocessor to output dependencies in make format to a file
+# -fvisibility: sets default symbol visibility property (see bottom of this page)
 # -g: enables debugging in gcc
 # -save-temps: retains intermediate files (here, that excludes *.d and *.o)
 # -O2: optimisation level 2 (can also use -Os to optimise for size at around O2 level)
@@ -85,20 +89,14 @@ $(BUILD)/include/%.h: %.h				# bundled libs
 # c++
 $(CACHE)/%.o: %.cpp | $(CACHE)
 	$(SILENTMSG) [cpp → o] $< → $@
-	$(ADD_COMPILE_COMMAND) add $(CC) "$(CPPFLAGS) $(CXXFLAGS) $(MACHDEP) $(INCLUDE) -c $< -o $@" $<
-	$(SILENTCMD)$(CXX) -c -MMD -MP -MF $(DEPSDIR)/$*.d $(CPPFLAGS) $(CXXFLAGS) $(MACHDEP) $(INCLUDE) $< -o $@ $(ERROR_FILTER)
+	$(ADD_COMPILE_COMMAND) add $(CC) "$(CPPFLAGS) $(CXXFLAGS) -fvisibility=hidden $(MACHDEP) $(INCLUDE) -c $< -o $@" $<
+	$(SILENTCMD)$(CXX) -c -MMD -MP -MF $(DEPSDIR)/$*.d $(CPPFLAGS) $(CXXFLAGS) -fvisibility=hidden $(MACHDEP) $(INCLUDE) $< -o $@ $(ERROR_FILTER)
 
 # c
 $(CACHE)/%.o: %.c | $(CACHE)
 	$(SILENTMSG) [c → o] $< → $@
-	$(ADD_COMPILE_COMMAND) add $(CC) "-c $(CPPFLAGS) $(CFLAGS) $(MACHDEP) $(INCLUDE) $< -o $@" $<
-	$(SILENTCMD)$(CC) -c -MMD -MP -MF $(DEPSDIR)/$*.d $(CPPFLAGS) $(CFLAGS) $(MACHDEP) $(INCLUDE) $< -o $@ $(ERROR_FILTER)
-
-# objective-c :eyes:
-$(CACHE)/%.o: %.m | $(CACHE)
-	$(SILENTMSG) [m → o] $< → $@
-	$(ADD_COMPILE_COMMAND) add $(CC) "-c $(CPPFLAGS) $(OBJCFLAGS) $< -o $@" $<
-	$(SILENTCMD)$(CC) -c -MMD -MP -MF $(DEPSDIR)/$*.d $(CPPFLAGS) $(OBJCFLAGS) $< -o $@ $(ERROR_FILTER)
+	$(ADD_COMPILE_COMMAND) add $(CC) "-c $(CPPFLAGS) $(CFLAGS) -fvisibility=hidden $(MACHDEP) $(INCLUDE) $< -o $@" $<
+	$(SILENTCMD)$(CC) -c -MMD -MP -MF $(DEPSDIR)/$*.d $(CPPFLAGS) $(CFLAGS) -fvisibility=hidden $(MACHDEP) $(INCLUDE) $< -o $@ $(ERROR_FILTER)
 
 # assembly language
 $(CACHE)/%.o: %.s | $(CACHE)
@@ -123,3 +121,14 @@ $(CACHE)/data/%.o : % | $(CACHE)/data
 
 $(BUILD) $(CACHE) $(CACHE)/data:
 	@mkdir -p $@
+
+
+# --- about symbol visibility ---
+# see repo wiki page for full explanation: https://github.com/systemwii/make/wiki/Symbol-Visibility
+# summary:
+# 1. have sublib .a files with API symbols shown (= global non-hidden) and non-API symbols local
+# 2. do -fvisibility=hidden:        current non-API symbols:    shown → hidden      [compiler output param]
+# 3. do -Wl,--exclude-libs,ALL:     sublib API symbols:         shown → hidden      [linker input param]
+# 4. now link current library, then
+# 5. do objdump --localize-hidden:  all hidden symbols:         hidden → local      [objdump between link and archive]
+# 6. have current lib .a file with API symbols shown and non-API symbols local

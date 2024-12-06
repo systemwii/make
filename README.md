@@ -75,7 +75,7 @@ All of these are space-separated lists.
 
 **BINEXTS**: Extensions with which to filter the binary data folders (in the format `.jpg`). All files of these extensions will be included.
 
-**LIBS** Libraries to link with. These are specified verbatim as flags to the linker (look up `ld` for the format), and the libraries must be available in the two following search path variables. libogc and [libm](https://en.wikipedia.org/wiki/C_standard_library#Linking,_libm) are automatically available.
+**LIBS** Libraries to link with. These are specified verbatim as flags to the linker (look up `ld` for the format), and any local libraries must be available in the two following search path variables. Installed libraries, such as libogc and [libm](https://en.wikipedia.org/wiki/C_standard_library#Linking,_libm), are automatically available.
 
 *[libogc libraries](https://github.com/devkitPro/libogc):*
 - *(Wii/GameCube)*: -logc -lmad -ldb -lfat -ltinysmb -lgxflux -lmodplay -liso9660 -lasnd -laesnd
@@ -85,10 +85,21 @@ All of these are space-separated lists.
 > [!IMPORTANT]
 > If a library you list here requires another you list here, you must list the requirer **before** the requiree.
 
-> [!IMPORTANT]  
-> **For libraries:** libraries are incrementally linked, so you must ensure that along every path in your tree of Makefiles, every library is only linked to **once**, else you will get multiple-definition errors. You will certainly want to only link libogc libraries at the top-level (for the final product), and typically link every library at the point it's used as a dependency.
-> 
-> I've never had to deal with diamond dependencies (other than libogc) but I expect you'd have to handle it similarly to libogc, so by setting top-level LIBS, but also linking to one of the bottom-level dependents in LIBDIRS* (making sure they're all checked out to the same commit).
+> [!TIP]  
+> To optimise the sizes of all outputs and build speed, it's best to specify here local libraries for the immediate projects that use them, and installed libraries (like libogc ones) only in the top-level project. Ideally, every library is specified only once in a build tree, tho it's not always possible.
+
+```mermaid
+graph TD;
+    X["[appX]<br>LIBS := -libY -logc"]-->Y;
+    Y["[libY]<br>LIBS := -libZ"]-->Z;
+    Z["[libZ]<br>LIBS := "]
+
+    A["[AppA]<br>LIBS := -libB -libC -logc"]-->B;
+    A-->C;
+    B["[libB]<br>LIBS := -libD"]-->D;
+    C["[libC]<br>LIBS := -libD"]-->D;
+    D["[libD]<br>LIBS :="]
+```
 
 **LIBDIRSBNDLE**: Search paths for bundled libraries: files matching `/include/*.h` and `/lib/*.a` in a folder specified here are included.
 
