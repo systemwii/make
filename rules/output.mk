@@ -55,6 +55,10 @@ ifeq ($(TYPE), dol)
 $(BUILD)/$(TARGET).dol		:   $(CACHE)/$(TARGET).elf
 $(CACHE)/$(TARGET).elf		:	$(LINKDEPS)
 endif
+ifeq ($(TYPE), bin)
+$(BUILD)/$(TARGET).bin		:   $(CACHE)/$(TARGET).elf
+$(CACHE)/$(TARGET).elf		:	$(LINKDEPS)
+endif
 ifeq ($(TYPE), a)
 $(BUILD)/lib$(TARGET).a		:	$(LINKDEPS)
 endif

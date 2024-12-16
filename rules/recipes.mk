@@ -13,6 +13,11 @@ $(BUILD)/%.dol: | $(BUILD)
 	$(SILENTCMD)elf2dol $< $@
 	@echo
 
+$(BUILD)/%.bin: | $(BUILD)
+	$(SILENTMSG) [elf → bin] → $@
+	$(SILENTCMD)$(OBJCOPY) -O binary $< $@
+	@echo
+
 $(BUILD)/%.tpl: | $(BUILD)
 	$(SILENTMSG) [scf → tpl] → $@
 	$(SILENTCMD)gxtexconv -s $< -d $(DEPSDIR)/$*.d -o $@

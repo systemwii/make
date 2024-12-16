@@ -53,6 +53,7 @@ All directories are relative to the Makefile being executed. Variables specified
 **TYPE**: The output's type. Options:
 - `dol`: A final application binary, in .dol format. This will also generate a .elf binary, in the cache folder.
 - `dol+elf`: As above but with both the .dol and .elf in the build folder.
+- `bin`: A raw binary, converted from an .elf binary (generated in the cache folder) with `objcopy -O binary`.
 - `a`: An archive for a static library (named `lib<TARGET>.a`), for linking in outside applications (e.g. with the LIBDIRSLOOSE variable here).
 - `a+h`: An archive for a static library, bundled with its header (to `lib/lib<TARGET>.a` and `include/<TARGET>.h`), for linking in outside applications (e.g. with the LIBDIRSBNDLE variable here).
 - If left blank, Make will compile the project into object files but not link them into an output.
@@ -68,6 +69,9 @@ All directories are relative to the Makefile being executed. Variables specified
 All of these are space-separated lists.
 
 **SRCS**: Folders containing source files to use.
+
+> [!NOTE]
+> If you put a sub-repo's root here, build/cache folders may fail to be generated because Make detects them (via VPATH) in the sub-repo. This can be worked around by changing BUILD/CACHE in either repo or making the folders yourself.
 
 **SRCEXTS**: Extensions with which to filter the source folders (in the format `.cpp`). All files of these extensions will be included.
 
