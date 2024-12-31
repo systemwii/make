@@ -4,17 +4,17 @@ Welcome to systemwii's Make rules setup. Consult <https://makefiletutorial.com/>
 
 ## Make Configuration
 
-You can set the variable **RULESDIR** to point to the rules folder of this repository. Clone this repository, and either include them by submodule or install them as below.
+To start, clone a copy of either the whole [template repository](https://github.com/systemwii/template) (which becomes your project repo), or just copy its Makefile into an existing project.
 
-Installing the rules lets you have an unchanging version at a global path, while including them by submodule allows you to make instant changes to them as you work.
+Either include it by submodule or (clone and) install it to your devkitPro installation as below. Installing the rules lets you have an unchanging version at a global path, while including them by submodule allows you to make instant changes to them as you work.
 
 ### 1. Submodule
 
-From your repository, run this to add it as a submodule:
+From your project repository, run this to add this repo as a submodule:
 ```bash
 git submodule add https://github.com/systemwii/make.git lib/make
 ```
-Then set RULESDIR in your Makefile to point to it directly:
+Then set RULESDIR in your project's Makefile to point to it:
 ```makefile
 RULESDIR	:=	lib/make/rules
 ```
@@ -24,14 +24,14 @@ cd lib/make && git pull && cd ../..
 ```
 
 ### 2. Install
-From this cloned repository, rename `Makefile_` to `Makefile`, then run install:
+Clone this repository, then from inside it, rename `Makefile_` to `Makefile`, then run install:
 ```bash
 mv Makefile_ Makefile
 make install
 ```
 This replaces the entire contents of `$(DEVKITPPC)/rules` with the rules folder here. The Makefile is called `Makefile_` by default to avoid it being detected and run as part of the submodule setup above (which slows down builds but is otherwise harmless).
 
-Next, set RULESDIR to point to the installation:
+Next, set RULESDIR in your project's Makefile to point to the installation:
 ```
 RULESDIR	:=	$(DEVKITPPC)/rules
 ```
@@ -39,7 +39,7 @@ Original DevkitPPC rules won't be affected by installing these, since they live 
 
 ## Available Variables
 
-With this set up, you can clone a copy of the [template repository](https://github.com/systemwii/template) and use its Makefile with these instructions.
+Use your project's Makefile with these instructions.
 
 > [!WARNING]  
 > You can't put a comment on the same line as setting a variable else Make will include all the spaces before the # in the variable (lol).
@@ -110,6 +110,8 @@ graph TD;
 **LIBDIRSLOOSE**: Search paths for standalone `*.a` files (search is not recursive).
 
 **INCLUDES**: Search paths for `*.h` header files (search is not recursive). \<SRCS\>, libogc headers and \<CACHE\>/data are automatically included (see above for the definitions of SRCS and CACHE).
+
+**LIBOGC**: The folder where libogc (or a fork) is installed: a good starting point is to use `$(DEVKITPRO)/libogc` when targeting the Wii in PLATFORM, and to [install](https://github.com/extremscorner/libogc2?tab=readme-ov-file#installing) and use `$(DEVKITPRO)/libogc2` when targeting the GameCube.
 
 ### Flags
 

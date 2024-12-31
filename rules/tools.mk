@@ -10,13 +10,14 @@ endif
 #---------------------------------------------------------------------------------
 # path to tools
 #---------------------------------------------------------------------------------
-DEVKITPATH=$(shell echo "$(DEVKITPRO)" | sed -e 's/^\([a-zA-Z]\):/\/\1/')
-export PATH	:=	$(DEVKITPATH)/tools/bin:$(DEVKITPATH)/devkitPPC/bin:$(PATH)
+DEVKITPATH      =   $(shell echo "$(DEVKITPRO)" | sed -e 's/^\([a-zA-Z]\):/\/\1/')
+export PATH	    :=	$(DEVKITPATH)/tools/bin:$(DEVKITPATH)/devkitPPC/bin:$(PATH)
 
 #---------------------------------------------------------------------------------
-# add portlibs path
+# path to portlibs
 #---------------------------------------------------------------------------------
-export PORTLIBS_PATH	:=	$(DEVKITPRO)/portlibs
+PORTLIBS		:=	$(DEVKITPRO)/portlibs/$(PLATFORM) $(DEVKITPRO)/portlibs/ppc
+export PATH		:=	$(addsuffix /bin,$(PORTLIBS)):$(PATH)
 
 #---------------------------------------------------------------------------------
 # the prefix on the compiler executables

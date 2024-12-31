@@ -6,6 +6,9 @@
 
 # some tool flags are explained below; for reference, look up "man gcc", "man ld", etc.
 
+PLATFORMMACH	:=	$(subst gamecube,ogc,$(subst wii,rvl,$(PLATFORM)))
+MACHDEP			:=  -DGEKKO -m$(PLATFORMMACH) -mcpu=750 -meabi -mhard-float
+
 # --- output tools ---
 
 $(BUILD)/%.dol: | $(BUILD)

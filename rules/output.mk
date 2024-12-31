@@ -1,21 +1,21 @@
 # this (recursion-free) script builds one folder
 .SUFFIXES:	# clears the implicit built-in rules
 include $(RULESDIR)/tools.mk
-include $(RULESDIR)/platform.mk
 
 ### 1 | flags to be passed to compiler/linker
 # these are substituted into recipes.mk, so you cannot rename variables
 INCLUDE  := $(foreach dir, $(LIBDIRSBNDLE), -I $(dir)/include) \
 			$(foreach dir, $(INCLUDES) $(SRCS), -iquote $(dir)) \
-			-I $(LIBOGC_INC) -I $(CACHE)/data
+			-I $(LIBOGC)/include -I $(CACHE)/data
 LIBPATHS := $(foreach dir, $(LIBDIRSBNDLE), -L $(dir)/lib) \
 			$(foreach dir, $(LIBDIRSLOOSE), -L $(dir)) \
-			-L $(LIBOGC_LIB)
+			-L $(LIBOGC)/lib/$(subst gamecube,cube,$(PLATFORM))
 
 LD 		 := $(if $(findstring cpp,$(SRCEXTS)),$(CXX),$(CC))
 DEPSDIR  := $(CACHE)
 ifeq ($V, 1)
 $(info )
+$(info LOGC | $(LIBOGC))
 $(info C*   | $(INCLUDE))
 $(info LD   | $(LIBPATHS) $(LIBS))
 endif
